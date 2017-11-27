@@ -1,6 +1,9 @@
 const exchangeWebService = require("ews-javascript-api"),
   fetchListOfRooms = require('./ews/rooms').default,
-  auth = require('./auth');
+  auth = require('./auth'),
+  logger = require('./logger').default;
+
+const LOG_LEVEL = require('./logger').logLevels;
 
 module.exports = function (io){
   let isRunning = false;
@@ -9,10 +12,14 @@ module.exports = function (io){
     io.of('/').on('connection', function(socket) {
       if (!isRunning) {
         (function callEWS(){
-          fetchListOfRooms({ exchangeWebService, auth }, function(err, result) {
+          fetchListOfRooms({ exchangeWebService, auth, logger }, function(err, result) {
             if (result) {
-              if (err) return console.log(err);
+              if (err) {
+                logger.log({ level: LOG_LEVEL.error, message: err });
+                return;
+              }
               // send data to page
+              logger.log({ level: LOG_LEVEL.info, message: 'Sending rooms-response' });
               io.of('/').emit('updatedRooms', result);
             }
             io.of('/').emit('controllerDone', 'done');

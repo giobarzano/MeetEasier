@@ -1,7 +1,10 @@
+const LOG_LEVEL = require('../logger').logLevels;
+
 // Container with all private functions, which will be exported, to support mocking of functions
 const API = {
   _createCalendarFolderId,
   _createCalendarView,
+  _createDefaultRejector,
   _createExchangeService,
   _enhanceRooms,
   _getFlightBoardData,
@@ -34,10 +37,10 @@ module.exports = {
 
 // Public
 
-function fetchListOfRooms({ exchangeWebService, auth }, callback) {
+function fetchListOfRooms({ exchangeWebService, auth, logger }, callback) {
   const exchangeService = API._createExchangeService({ exchangeWebService, auth });
-  return API._getRoomLists(exchangeService)
-    .then((roomLists) => API._getRoomsInLists({ exchangeWebService, exchangeService, auth }, roomLists))
+  return API._getRoomLists({ logger }, exchangeService)
+    .then((roomLists) => API._getRoomsInLists({ exchangeWebService, exchangeService, auth, logger }, roomLists))
     .then((rooms) => API._getEnhancedRooms({ exchangeWebService, exchangeService }, rooms))
     .then((rooms) => callback(null, rooms));
 }
@@ -64,19 +67,42 @@ function _createExchangeService({ exchangeWebService: ews, auth }) {
   return svcExchange;
 }
 
-function _getRoomLists(exchangeService) {
-  return new Promise(function (resolve) {
-    exchangeService.GetRoomLists().then((lists) => resolve(lists.items));
+function _createDefaultRejector({ logger }, reject) {
+  return (err) => {
+    logger.log({
+      level: LOG_LEVEL.error,
+      message: err
+    });
+    reject && reject(err);
+    return err;
+  };
+}
+
+function _getRoomLists({ logger }, exchangeService) {
+  return new Promise(function (resolve, reject) {
+    logger.log({ level: LOG_LEVEL.info, message: 'Fetching room lists' });
+    exchangeService.GetRoomLists().then(
+      (lists) => {
+        logger.log({ level: LOG_LEVEL.verbose, message: 'Received room lists' });
+        resolve(lists.items);
+      },
+      API._createDefaultRejector({ logger }, reject)
+    );
   });
 }
 
-function _getRoomsInLists({ exchangeWebService: ews, exchangeService, auth }, roomLists) {
-  return new Promise(function (resolve) {
+function _getRoomsInLists({ exchangeWebService: ews, exchangeService, auth, logger }, roomLists) {
+  return new Promise(function (resolve, reject) {
+    logger.log({ level: LOG_LEVEL.info, message: 'Fetching rooms' });
     const arrPrmsRooms = roomLists.map((roomList) => exchangeService.GetRooms(new ews.Mailbox(roomList.Address)));
-    Promise.all(arrPrmsRooms).then((roomsOfRoomLists) => {
-      // TODO Shouldn't unifying the email-addresses be optional/configurable?
-      resolve(API._getAddressDataForAllRooms(roomLists, roomsOfRoomLists, auth.domain));
-    });
+    Promise.all(arrPrmsRooms).then(
+      (roomsOfRoomLists) => {
+        logger.log({ level: LOG_LEVEL.verbose, message: 'Received rooms' });
+        // TODO Shouldn't unifying the email-addresses be optional/configurable?
+        resolve(API._getAddressDataForAllRooms(roomLists, roomsOfRoomLists, auth.domain));
+      },
+      API._createDefaultRejector({ logger }, reject)
+    );
   });
 }
 

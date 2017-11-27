@@ -1,13 +1,17 @@
 const path = require('path'),
   exchangeWebService = require("ews-javascript-api"),
   auth = require('../config/auth'),
-  fetchListOfRooms = require('../config/ews/rooms').default;
+  fetchListOfRooms = require('../config/ews/rooms').default,
+  logger = require('../config/logger').default;
+
+const LOG_LEVEL = require('../config/logger').logLevels;
 
 module.exports = function(app) {
 	// api routes ================================================================
 	// returns an array of room objects
 	app.get('/api/rooms', function(req, res) {
-    fetchListOfRooms({ exchangeWebService, auth }, function(err, rooms) {
+    fetchListOfRooms({ exchangeWebService, auth, logger }, function(err, rooms) {
+      logger.log({ level: LOG_LEVEL.info, message: 'Sending rooms-response' });
 			res.json(rooms);
 		});
 	});
@@ -18,6 +22,7 @@ module.exports = function(app) {
 		var ews = require('../config/ews/roomlists.js');
 
 		ews(function(err, roomlists) {
+      logger.log({ level: LOG_LEVEL.info, message: 'Sending roomlists-response' });
 			res.json(roomlists);
 		});
 	});

@@ -19,7 +19,8 @@
     "grunt": "1.0.1",
     "grunt-contrib-sass": "1.0.0",
     "grunt-contrib-watch": "1.0.0",
-    "socket.io": "1.7.4"
+    "socket.io": "1.7.4",
+    "winston": "3.0.0-rc1"
   },
   "devDependencies": {
     "grunt-cli": "1.2.0"

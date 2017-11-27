@@ -181,6 +181,9 @@ There are three main directories in the `ui-react/src/` folder:
     email = email.substring(0, email.indexOf('@'));
     email = email + '@' + auth.domain + '.com';
     ```
+* To change the log level, set it as an environment variable `LOG_LEVEL` (allowed values are `error`, `warn`, `info`,
+  `verbose`, `debug`, `silly`). Default value is `info`. Severities equal or lower than `debug` will log responses of
+  the EWS requests to the console.
 
 ***
 

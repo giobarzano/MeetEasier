@@ -3,6 +3,8 @@ module.exports = function (callback) {
   // modules -------------------------------------------------------------------
   var ews = require("ews-javascript-api");
   var auth = require("../auth.js");
+  var logger = require("../logger").default;
+  var LOG_LEVEL = require("../logger").logLevels;
 
   // ews -----------------------------------------------------------------------
   var exch = new ews.ExchangeService(ews.ExchangeVersion.Exchange2016);
@@ -10,13 +12,23 @@ module.exports = function (callback) {
   exch.Url = new ews.Uri(auth.exchange.uri);
 
   // get roomlists from EWS and return sorted array of room list names
-  exch.GetRoomLists().then((lists) => {
-    var roomLists = [];
+  logger.log({ level: LOG_LEVEL.info, message: 'Fetching room lists' });
+  exch.GetRoomLists().then(
+    (lists) => {
+      logger.log({ level: LOG_LEVEL.verbose, message: 'Received room lists' });
 
-    lists.items.forEach(function (item, i, array) {
-      roomLists.push(item.Name);
-    });
-    callback(null, roomLists.sort());
-  });
-
+      var roomLists = [];
+      lists.items.forEach(function (item, i, array) {
+        roomLists.push(item.Name);
+      });
+      callback(null, roomLists.sort());
+    },
+    (err) => {
+      logger.log({
+        level: LOG_LEVEL.error,
+        message: err
+      });
+      return err;
+    }
+  );
 };
