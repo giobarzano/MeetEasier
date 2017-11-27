@@ -1,0 +1,7 @@
+*.log
+.env
+.idea
+.sass-cache
+node_modules
+/mockups
+/ui-react/build

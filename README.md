@@ -184,6 +184,27 @@ There are three main directories in the `ui-react/src/` folder:
 
 ***
 
+## Docker
+
+To build the docker image, run 
+
+```bash
+docker build .
+```
+
+Following environment variables can be set during build time:
+
+* `PUBLIC_URL` The public URL under which the application will be available. This has to be set for the websockets of
+  the UI
+
+To build the image with the environment variable, execute following command (with replaced URL):
+
+```bash
+docker build --build-arg PUBLIC_URL=http://meet-easier.your-domain.com .
+```
+
+***
+
 ## Flightboard Layout Mockup
 
 ![Mockup 3](mockups/mockup-3.jpg)
