@@ -14,8 +14,8 @@ ReactDOM.render ((
   <BrowserRouter>
     <div>
       <Switch>
-        <Route exact path="/" component={FlightboardLayout} />
-        <Route exact path="/single-room/:name" component={SingleRoomLayout} />
+        <Route exact path="/:roomList?" component={FlightboardLayout} />
+        <Route exact path="/:roomList?/meetings" component={SingleRoomLayout} />
         <Route component={NotFound} />
       </Switch>
     </div>

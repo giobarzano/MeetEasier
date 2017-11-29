@@ -35,8 +35,8 @@ class Flightboard extends Component {
   }
 
   render() {
-    const { response } = this.state;
-    const { now } = this.state;
+    const { now, response } = this.state,
+      selectedRoomList = this.props.selectedRoomList;
 
     let styles = {
       show: {
@@ -48,7 +48,7 @@ class Flightboard extends Component {
       flex: {
         display: 'flex'
       }
-    }
+    };
 
     return (
       <div className="tracker-wrap">
@@ -59,9 +59,8 @@ class Flightboard extends Component {
             let nextUp = '';
             let timesPresent = false;
             let skippedRoom = false;
-            // TODO Use `RoomAlias`
-            const room = item.Name.toLowerCase().replace(/\s+/g, "-");
-            const roomlist = 'roomlist-' + item.Roomlist.toLowerCase().replace(/\s+/g, "-");
+            const slugifiedRoom = item.RoomAlias,
+              slugifiedRoomlist = item.RoomlistAlias;
 
             fbConfig.board.roomsToSkip.forEach(function(configItem, configKey) {
               // do stuff
@@ -82,7 +81,7 @@ class Flightboard extends Component {
             }
             // if the room needs to be skipped, return null
             if (!skippedRoom) {
-              let meetingRoomClass = `${ room } meeting-room ${ item.Busy ? 'meeting-room-busy' : '' }`;
+              let meetingRoomClass = `${ slugifiedRoom } meeting-room ${ item.Busy ? 'meeting-room-busy' : '' }`;
               meetingRoomClass += item.Busy ? ' meeting-room-busy' : '';
               meetingRoomClass += item.ErrorMessage ? ' meeting-room-error' : '';
               const meetingClass = item.ErrorMessage
@@ -95,43 +94,45 @@ class Flightboard extends Component {
                 : item.Busy
                   ? fbConfig.board.text.statusBusy
                   : fbConfig.board.text.statusAvailable;
+              const isRoomVisible = selectedRoomList === slugifiedRoomlist
+                || selectedRoomList === 'roomlist-all'
+                || selectedRoomList === '';
               return (
-
-                <div className={'row-padder ' + roomlist} style={this.props.filter === roomlist || this.props.filter === 'roomlist-all' || this.props.filter === '' ? styles.show : styles.hide}>
+                <div key={slugifiedRoom} className={'row-padder roomlist-' + slugifiedRoomlist} style={isRoomVisible ? styles.show : styles.hide}>
                   <div className="row">
                     <div className="medium-12 columns">
                       <div className={meetingRoomClass}>
                         <div className="row valign-middle">
-                          <div className={room + '-status meeting-room__status medium-2 columns'}>
+                          <div className={slugifiedRoom + '-status meeting-room__status medium-2 columns'}>
                             <div className={meetingClass} title={item.ErrorMessage || ''}>
                               {statusText}
                             </div>
                           </div>
                           <div className="medium-3 columns">
-                            <div className={room + '-name meeting-room__name'}>
+                            <div className={slugifiedRoom + '-name meeting-room__name'}>
                               {item.Name}
                             </div>
                           </div>
                           <div className="medium-6 columns">
-                            <div className={room + '-meeting-information'}>
+                            <div className={slugifiedRoom + '-meeting-information'}>
                                 {timesPresent && item.Appointments[0].End >= now &&
                                   <div>
-                                    <span className={room + '-meeting-upcoming meeting-upcoming'}>
+                                    <span className={slugifiedRoom + '-meeting-upcoming meeting-upcoming'}>
                                       {nextUp}
                                     </span>
-                                    <span className={room + '-subject meeting-subject'}>
+                                    <span className={slugifiedRoom + '-subject meeting-subject'}>
                                       {item.Appointments[0].Subject}
                                     </span>
                                   </div>
                                 }
                             </div>
-                            <div className={room + '-time meeting-time'}>
+                            <div className={slugifiedRoom + '-time meeting-time'}>
                               {timesPresent ?
                                 new Date(parseInt(item.Appointments[0].Start, 10)).toLocaleDateString([],{month: 'short', day: '2-digit'}) + ' ' + new Date(parseInt(item.Appointments[0].Start, 10)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) + ' - ' + new Date(parseInt(item.Appointments[0].End, 10)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
                                 : ''
                               }
                             </div>
-                            <div className={room + '-organizer meeting-organizer'}>
+                            <div className={slugifiedRoom + '-organizer meeting-organizer'}>
                               {timesPresent && item.Appointments[0].End >= now &&
                                 item.Appointments[0].Organizer
                               }
@@ -140,7 +141,7 @@ class Flightboard extends Component {
                           <div className="medium-1 columns">
                             <div className="meeting-fullscreen">
 
-                              <Link to={'/single-room/' + room} target="_blank">
+                              <Link to={'/' + slugifiedRoom + '/meetings'} target="_blank">
                                 <i className="fi-monitor"></i>
                               </Link>
 

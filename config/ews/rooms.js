@@ -89,6 +89,7 @@ function _getAddressDataForAllRooms(roomLists, roomsOfRoomLists, domain) {
 function _getRoomAddress(roomList, room, domain, unifyEmailAddress) {
   return {
     Roomlist: roomList.Name,
+    RoomlistAlias: API._slugify(roomList.Name),
     Name: room.Name,
     RoomAlias: API._slugify(room.Name),
     Email: API._unifyEmailAddress(room.Address, domain, unifyEmailAddress)

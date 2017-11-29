@@ -67,6 +67,7 @@ body {
       color: #474747 !important;
       cursor: pointer; }
       .fb__nav-menu .fb__dropdown li .fb__child-dropdown li a {
+        padding: 0;
         color: #474747 !important; }
 
 .fb__nav-menu-right li {

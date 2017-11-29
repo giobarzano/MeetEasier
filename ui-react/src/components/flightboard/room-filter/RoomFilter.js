@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 
 let fbConfig = require('../../../config/flightboard.config.js');
 
@@ -23,33 +24,28 @@ class RoomFilter extends Component {
       })
   }
 
-  filterFlightboard(e) {
-    e.preventDefault();
-    this.props.filter(e.target.id);
-  }
-
   render() {
-    const { response } = this.state;
-
+    const { response } = this.state,
+      selectedRoomList = this.props.selectedRoomList;
     return (
       <li>
-        <a href="#" className="current-filter">
-
+        <Link to={'/' + selectedRoomList.toLowerCase().replace(/\s+/g, "-")} className="current-filter">
           {fbConfig.roomFilter.filterTitle}
-
-        </a>
+        </Link>
         <ul className="menu fb__child-dropdown">
-          <li onClick={this.filterFlightboard.bind(this)} id="roomlist-all">
-
-            {fbConfig.roomFilter.filterAllTitle}
-
+          <li id="roomlist-all">
+            <Link to={'/'}>{fbConfig.roomFilter.filterAllTitle}</Link>
           </li>
           { response ?
-            this.state.roomlists.map(function(item, key) {
+            this.state.roomlists.map((item) => {
+              // TODO don't re-slugify the room name. Use the `RoomAlias` instead (this will require changes in the API)
+              const slugifiedRoomName = item.toLowerCase().replace(/\s+/g, "-");
               return (
-                <li onClick={this.filterFlightboard.bind(this)} id={'roomlist-' + item.toLowerCase().replace(/\s+/g, "-")}>{item}</li>
+                <li key={slugifiedRoomName} id={'roomlist-' + slugifiedRoomName}>
+                  <Link to={'/' + slugifiedRoomName}>{item}</Link>
+                </li>
               )
-            }.bind(this))
+            })
             : <p>Loading ...</p>
           }
         </ul>

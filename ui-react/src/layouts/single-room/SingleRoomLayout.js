@@ -1,32 +1,24 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 
 import Display from '../../components/single-room/display/Display';
 import NotFound from '../../components/global/not-found/NotFound';
 
 class SingleRoomLayout extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      roomAlias: props.match.params.name
-    }
-  }
-
   render () {
-    const { roomAlias } = this.state;
+    const roomList = this.props.match.params.roomList || '';
     return (
-
       <div id="single-room__wrap">
-        { roomAlias ?
-          <Display data={this.state.roomAlias} />
+        { roomList ?
+          <Display data={roomList} />
         :
           <div id="error-wrap">
             <NotFound />
           </div>
         }
       </div>
-
-    )
+    );
   }
 }
 
-export default SingleRoomLayout;
+export default withRouter(SingleRoomLayout);

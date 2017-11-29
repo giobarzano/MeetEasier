@@ -1,30 +1,19 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 
 import Flightboard from '../../components/flightboard/board/Flightboard';
 import Navbar from '../../components/flightboard/navbar/Navbar';
 
 class FlightboardTemplate extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      filter: ''
-    }
-  }
-
-  handleFilter(filterValue) {
-    this.setState({
-      filter: filterValue
-    });
-  }
-
   render () {
+    const roomList = this.props.match.params.roomList || '';
     return (
       <div id="page-wrap">
-        <Navbar filter={this.handleFilter.bind(this)}/>
-        <Flightboard filter={this.state.filter}/>
+        <Navbar selectedRoomList={roomList} />
+        <Flightboard selectedRoomList={roomList}/>
       </div>
     )
   }
 }
 
-export default FlightboardTemplate;
+export default withRouter(FlightboardTemplate);
