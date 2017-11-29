@@ -28,7 +28,7 @@ class Clock extends Component {
   render() {
     return (
       <span id="clock">
-        {this.state.date.toLocaleTimeString()}
+        {this.state.date.toLocaleDateString([],{month: 'short', day: '2-digit'})} {this.state.date.toLocaleTimeString()}
       </span>
     );
   }
