@@ -127,7 +127,7 @@ class Flightboard extends Component {
                             </div>
                             <div className={room + '-time meeting-time'}>
                               {timesPresent ?
-                                new Date(parseInt(item.Appointments[0].Start, 10)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) + ' - ' + new Date(parseInt(item.Appointments[0].End, 10)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+                                new Date(parseInt(item.Appointments[0].Start, 10)).toLocaleDateString([],{month: 'short', day: '2-digit'}) + ' ' + new Date(parseInt(item.Appointments[0].Start, 10)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) + ' - ' + new Date(parseInt(item.Appointments[0].End, 10)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
                                 : ''
                               }
                             </div>
