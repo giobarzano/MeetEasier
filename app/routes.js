@@ -1,6 +1,4 @@
-const path = require('path'),
-  fetchRooms = require('../config/ews/rooms').default,
-  fetchRoomLists = require('../config/ews/roomlists.js').default;
+const path = require('path');
 
 const API = {
   _createDefaultHandler,
@@ -16,8 +14,8 @@ module.exports = {
 };
 
 
-function createRoutes({ LOG_LEVEL, exchangeWebService, auth, logger }) {
-  const dependencies = { LOG_LEVEL, exchangeWebService, auth, logger };
+function createRoutes({ LOG_LEVEL, getRooms, getRoomListNames, logger }) {
+  const dependencies = { LOG_LEVEL, getRooms, getRoomListNames, logger };
   return [
     { method: 'get', path: '/api/heartbeat', handler: API._createHeartbeatHandler(dependencies) },
     { method: 'get', path: '/api/rooms',     handler: API._createRoomsHandler(dependencies) },
@@ -26,21 +24,17 @@ function createRoutes({ LOG_LEVEL, exchangeWebService, auth, logger }) {
   ];
 }
 
-function _createRoomsHandler({ LOG_LEVEL, exchangeWebService, auth, logger }) {
+function _createRoomsHandler({ LOG_LEVEL, getRooms, logger }) {
   return function _handleRooms(req, res) {
-    fetchRooms({ exchangeWebService, auth, logger }, function(err, rooms) {
-      logger.log({ level: LOG_LEVEL.info, message: 'Sending rooms-response' });
-      res.json(rooms);
-    });
+    logger.log({ level: LOG_LEVEL.info, message: '< Rooms: Sending cache to client' });
+    res.json(getRooms());
   };
 }
 
-function _createRoomListsHandler({ LOG_LEVEL, logger }) {
+function _createRoomListsHandler({ LOG_LEVEL, getRoomListNames, logger }) {
   return function _handleRoomLists(req, res) {
-    fetchRoomLists(function(err, roomlists) {
-      logger.log({ level: LOG_LEVEL.info, message: 'Sending roomlists-response' });
-      res.json(roomlists);
-    });
+    logger.log({ level: LOG_LEVEL.info, message: '< RoomLists: Sending cache to client' });
+    res.json(getRoomListNames());
   };
 }
 

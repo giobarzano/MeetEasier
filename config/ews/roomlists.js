@@ -1,34 +1,49 @@
-module.exports.default = function (callback) {
+// IMPORTS
 
-  // modules -------------------------------------------------------------------
-  var ews = require("ews-javascript-api");
-  var auth = require("../auth.js");
-  var logger = require("../logger").default;
-  var LOG_LEVEL = require("../logger").logLevels;
+const LOG_LEVEL = require("../logger").logLevels,
+  { createDefaultRejector } = require('../utils');
 
-  // ews -----------------------------------------------------------------------
-  var exch = new ews.ExchangeService(ews.ExchangeVersion.Exchange2016);
-  exch.Credentials = new ews.ExchangeCredentials(auth.exchange.username, auth.exchange.password);
-  exch.Url = new ews.Uri(auth.exchange.uri);
+// CONSTANTS
 
-  // get roomlists from EWS and return sorted array of room list names
-  logger.log({ level: LOG_LEVEL.info, message: 'Fetching room lists' });
-  exch.GetRoomLists().then(
-    (lists) => {
-      logger.log({ level: LOG_LEVEL.verbose, message: 'Received room lists' });
-
-      var roomLists = [];
-      lists.items.forEach(function (item, i, array) {
-        roomLists.push(item.Name);
-      });
-      callback(null, roomLists.sort());
-    },
-    (err) => {
-      logger.log({
-        level: LOG_LEVEL.error,
-        message: err
-      });
-      return err;
-    }
-  );
+const API = {
+  _createExchangeService,
+  _getRoomLists
 };
+
+// EXPORT API
+
+module.exports = {
+  'default': fetchRoomLists,
+  API
+};
+
+// IMPLEMENTATION DETAILS
+
+// Public
+
+function fetchRoomLists({ exchangeWebService, auth, logger }) {
+  const exchangeService = API._createExchangeService({ exchangeWebService, auth });
+  return API._getRoomLists({ logger }, exchangeService);
+}
+
+// Private
+
+function _createExchangeService({ exchangeWebService: ews, auth }) {
+  const svcExchange = new ews.ExchangeService(ews.ExchangeVersion.Exchange2016);
+  svcExchange.Credentials = new ews.ExchangeCredentials(auth.exchange.username, auth.exchange.password);
+  svcExchange.Url = new ews.Uri(auth.exchange.uri);
+  return svcExchange;
+}
+
+function _getRoomLists({ logger }, exchangeService) {
+  return new Promise(function (resolve, reject) {
+    logger.log({ level: LOG_LEVEL.info, message: '> RoomLists: Fetching from EWS' });
+    exchangeService.GetRoomLists().then(
+      (lists) => {
+        logger.log({ level: LOG_LEVEL.verbose, message: 'v RoomLists: Received from EWS' });
+        resolve(lists.items);
+      },
+      createDefaultRejector({ logger }, reject)
+    );
+  });
+}
