@@ -1,32 +1,77 @@
-// server.js
+// IMPORTS
 
-// Print proper stacktrace on unhandled promise rejection
-process.on('unhandledRejection', err => {
-  console.log(err);
-});
+const express                                     = require('express'),
+      IoServer                                    = require('socket.io'),
+      exchangeWebService                          = require("ews-javascript-api"),
+      auth                                        = require('./config/auth'),
+      { "default": logger, logLevels: LOG_LEVEL } = require('./config/logger'),
+      createRoutes                                = require('./app/routes.js').default,
+      createController                            = require('./config/controller.js').default;
 
-// set up ======================================================================
-var express = require('express');
-var app = express();
+// CONSTANTS
 
-// configuration ===============================================================
-// use public folder for js, css, imgs, etc
-app.use(express.static('static'));
-app.use(express.static(`${__dirname}/ui-react/build`));
+// Container with all private functions, which will be exported, to support mocking of functions
 
-// routes ======================================================================
-require('./app/routes.js')(app);
+const API = {
+  _bindEvents,
+  _createApp,
+  _init,
+  _setRoutes,
+  _setupServer,
+  _startServer
+};
 
-// launch ======================================================================
-//const port = process.env.PORT || 3001;
-const port = process.env.PORT || 8080;
-var theserver = app.listen(port, function(){
-	// call controller functions -------------------------------------------------
-	var io = require('socket.io').listen(theserver);
+// EXPORT API
 
-	// controller if using room lists
-	var controller = require('./config/controller.js')(io);
+module.exports = {
+  API
+};
 
-	// log something so we know the server is working correctly
-	console.log('now we are cooking.');
-});
+// INITIALIZATION
+
+_init();
+
+// IMPLEMENTATION DETAILS
+
+function _init() {
+  const dependencies = { LOG_LEVEL, exchangeWebService, auth, express, logger, process, IoServer };
+  API._bindEvents(dependencies);
+  const app = API._setupServer(dependencies, createRoutes(dependencies));
+  API._startServer(dependencies, app, process.env.PORT);
+}
+
+function _bindEvents({ process }) {
+  // Print proper stacktrace on unhandled promise rejection
+  process.on('unhandledRejection', (err) => console.log(err));
+}
+
+function _createApp({ express }) {
+  return express();
+}
+
+function _setupServer({ express }, routes) {
+  const app = API._createApp({ express });
+  // Use public folder for js, css, imgs, etc
+  app.use(express.static('static'));
+  app.use(express.static(`${__dirname}/ui-react/build`));
+  // Set routes
+  API._setRoutes(app, routes);
+  return app;
+}
+
+function _startServer({ LOG_LEVEL, auth, IoServer, logger }, app, port = 8080) {
+  const server = app.listen(port, function() {
+    // call controller functions -------------------------------------------------
+    const io = IoServer.listen(server);
+    // controller if using room lists
+    createController({ LOG_LEVEL, auth, io, logger });
+    // log something so we know the server is working correctly
+    console.log('now we are cooking.');
+  });
+}
+
+function _setRoutes(app, routes) {
+  routes.forEach((routeConfig) => {
+    app[routeConfig.method](routeConfig.path, routeConfig.handler);
+  });
+}

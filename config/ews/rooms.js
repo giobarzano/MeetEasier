@@ -1,4 +1,5 @@
-const LOG_LEVEL = require('../logger').logLevels;
+const SoapFaultDetails = require('ews-javascript-api/js/Misc/SoapFaultDetails').SoapFaultDetails,
+  LOG_LEVEL = require('../logger').logLevels;
 
 // Container with all private functions, which will be exported, to support mocking of functions
 const API = {
@@ -27,7 +28,7 @@ const API = {
 // Export API
 
 module.exports = {
-  "default": fetchListOfRooms,
+  "default": fetchRooms,
   // Export private API for tests
   API
 };
@@ -37,7 +38,7 @@ module.exports = {
 
 // Public
 
-function fetchListOfRooms({ exchangeWebService, auth, logger }, callback) {
+function fetchRooms({ exchangeWebService, auth, logger }, callback) {
   const exchangeService = API._createExchangeService({ exchangeWebService, auth });
   return API._getRoomLists({ logger }, exchangeService)
     .then((roomLists) => API._getRoomsInLists({ exchangeWebService, exchangeService, auth, logger }, roomLists))
@@ -172,7 +173,11 @@ function _getFlightBoardData({ exchangeWebService: ews, exchangeService }, rooms
 function _getDataForRooms(appointmensOfRooms) {
   return appointmensOfRooms.map((result) => {
     const appointments = Array.isArray(result.Items) ? result.Items : undefined,
-      errorMessage = Array.isArray(result.Items) ? undefined : result.response.errorMessage;
+      errorMessage = Array.isArray(result.Items)
+        ? undefined
+        : result instanceof SoapFaultDetails
+          ? result.message
+          : result.response.errorMessage;
     return API._getRoomData(appointments, { errorMessage });
   });
 }

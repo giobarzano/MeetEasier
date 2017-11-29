@@ -1,4 +1,4 @@
-module.exports = function (callback) {
+module.exports.default = function (callback) {
 
   // modules -------------------------------------------------------------------
   var ews = require("ews-javascript-api");
