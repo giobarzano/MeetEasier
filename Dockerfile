@@ -21,7 +21,8 @@ COPY . .
 # Build app
 # Change permissions, to allow everyone to change into the directories and read files
 # (if the user which runs the container is different than root)
-RUN npm run build && \
+RUN echo "$PUBLIC_URL" && \
+    npm run build && \
     rm -rf /usr/src/app/ui-react/node_modules && \
     chmod -R +r /usr/src/app && \
     find /usr/src/app -type d -exec chmod +x {} \;
